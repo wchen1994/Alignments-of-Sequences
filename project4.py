@@ -66,3 +66,60 @@ def compute_alignment_matrix(seq_x, seq_y, scoring_matrix, global_flag):
             align_matrix[row][col] = max(score_list)
 
     return align_matrix
+
+def compute_global_alignment(seq_x, seq_y, scoring_matrix, alignment_matrix):
+    """
+    [Input]
+        seq_x, seq_y: the two different sequence to be aligned
+        scoring _matrix: the dictionary of dictionary of the score
+        alignment_matrix: the matrix of score of alignment
+    [Output]
+        tuple(score, align_x, align_y)
+        score: the score of the alignment
+        align_x, align_y: the aligned sequence
+    """
+    idx_x = len(seq_x)
+    idx_y = len(seq_y)
+    align_x = ""
+    align_y = ""
+    score = 0
+
+    while idx_x !=0 and idx_y != 0:
+        # match is alphabet and alphabet
+        if alignment_matrix[idx_x][idx_y] == alignment_matrix[idx_x-1][idx_y-1] + scoring_matrix[seq_x[idx_x-1]][seq_y[idx_y-1]]:
+            align_x = seq_x[idx_x-1] + align_x
+            align_y = seq_y[idx_y-1] + align_y
+            score += scoring_matrix[seq_x[idx_x-1]][seq_y[idx_y-1]]
+            idx_x -= 1
+            idx_y -= 1
+
+        # match is alphabet and '-'
+        elif alignment_matrix[idx_x][idx_y] == alignment_matrix[idx_x-1][idx_y] + scoring_matrix[seq_x[idx_x-1]]['-']:
+            align_x = seq_x[idx_x-1] + align_x
+            align_y = '-' + align_y
+            score += scoring_matrix[seq_x[idx_x-1]]['-']
+            idx_x -= 1
+
+        # match is '-' and alphabet
+        elif alignment_matrix[idx_x][idx_y] == alignment_matrix[idx_x][idx_y-1] + scoring_matrix['-'][seq_y[idx_y-1]]:
+            align_x = '-' + align_x
+            align_y = seq_y[idx_y-1] + align_y
+            score += scoring_matrix['-'][seq_y[idx_y-1]]
+            idx_y -= 1
+
+    # append '-' on seq_y until same length
+    while idx_x != 0:
+        align_x = seq_x[idx_x-1] + align_x
+        align_y = '-' + align_y
+        score += scoring_matrix[seq_x[idx_x-1]]['-']
+        idx_x -= 1
+
+    # append '-' on seq_x until same length
+    while idx_y != 0:
+        align_x = '-' + align_x
+        align_y = seq_y[idx_y-1] + align_y
+        score += scoring_matrix['-'][seq_y[idx_y-1]]
+        idx_y -= 1
+
+    return (score, align_x, align_y)
+

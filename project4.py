@@ -123,3 +123,56 @@ def compute_global_alignment(seq_x, seq_y, scoring_matrix, alignment_matrix):
 
     return (score, align_x, align_y)
 
+def compute_local_alignment(seq_x, seq_y, scoring_matrix, alignment_matrix):
+    """
+    [Input]
+        seq_x, seq_y: the two different sequence to be aligned
+        scoring _matrix: the dictionary of dictionary of the score
+        alignment_matrix: the matrix of score of alignment
+    [Output]
+        tuple(score, align_x, align_y)
+        score: the score of the alignment
+        align_x, align_y: the aligned sequence
+    """
+    len_x = len(seq_x)
+    len_y = len(seq_y)
+    idx_x = 0
+    idx_y = 0
+    align_x = ""
+    align_y = ""
+    score = 0
+
+    # find best score
+    for idx_row in range(len_x+1):
+        for idx_col in range(len_y+1):
+            if alignment_matrix[idx_row][idx_col] > score:
+                score = alignment_matrix[idx_row][idx_col]
+                idx_x = idx_row
+                idx_y = idx_col
+            
+    while idx_x !=0 and idx_y != 0:
+        # match is alphabet and alphabet
+        if alignment_matrix[idx_x][idx_y] == alignment_matrix[idx_x-1][idx_y-1] + scoring_matrix[seq_x[idx_x-1]][seq_y[idx_y-1]]:
+            align_x = seq_x[idx_x-1] + align_x
+            align_y = seq_y[idx_y-1] + align_y
+            idx_x -= 1
+            idx_y -= 1
+
+        # match is alphabet and '-'
+        elif alignment_matrix[idx_x][idx_y] == alignment_matrix[idx_x-1][idx_y] + scoring_matrix[seq_x[idx_x-1]]['-']:
+            align_x = seq_x[idx_x-1] + align_x
+            align_y = '-' + align_y
+            idx_x -= 1
+
+        # match is '-' and alphabet
+        elif alignment_matrix[idx_x][idx_y] == alignment_matrix[idx_x][idx_y-1] + scoring_matrix['-'][seq_y[idx_y-1]]:
+            align_x = '-' + align_x
+            align_y = seq_y[idx_y-1] + align_y
+            idx_y -= 1
+
+        # minium socre of local alignment is 0 no need to loop
+        if alignment_matrix[idx_x][idx_y] == 0:
+            break
+
+    return (score, align_x, align_y)
+
